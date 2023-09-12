@@ -1,0 +1,37 @@
+Aplikace oskenuje zvolené porty na daném síovém zaøízení. Pakety musí bıt odeslané pomocí BSD sockets. Odchytávat odpovìdi mùete napø. pomocí knihovny libpcap.
+
+TCP skenování:
+Posílá pouze SYN pakety. Neprovádí tedy kompletní 3-way-handshake. Pokud pøijde odpovìï RST - port je oznaèen jako uzavøenı. Pokud po danı èasovı interval nepøijde ze skenovaného portu odpovìï, je nutno ovìøit dalším paketem a teprve potom port oznaèit jako filtrovanı. Pokud na daném portu bìí nìjáká sluba, je port oznaèen jako otevøenı. Více viz RFC 793.
+
+UDP skenování:
+U UDP skenování mùete uvaovat, e danı poèítaè pøi zavøeném portu odpoví ICMP zprávou typu 3, kódu 3 (port unreachable). Ostatní porty povaujte za otevøené.
+
+Volání programu: 
+
+./ipk-scan {-i <interface>} -pu <port-ranges> -pt <port-ranges> [<domain-name> | <IP-address>]
+
+kde: 
+-pt, pu port-ranges - skenované tcp/udp porty, povolenı zápis napø. -pt 22 nebo -pu 1-65535 nebo -pt 22,23,24
+domain-name | ip address - doménové jméno, nebo IP adresa skenovaného stroje
+-i eth0, kde argument pøedstavuje identifikátor rozhraní. Tento parametr je volitelnı, v pøípadì jeho nepøítomnosti se zvolí první IEEE 802 interface, kterı má pøidìlenou neloopbackovou IP adresu.
+
+Pøíklad chování:
+./ipk-scan -pt 21,22,143 -pu 53,67 localhost
+
+Interesting ports on localhost (127.0.0.1):
+PORT     STATE 
+21/tcp	 closed
+22/tcp 	 open  
+143/tcp	 filtered
+53/udp	 closed
+67/udp	 open
+
+Rozšíøení programu:
+Je mono zadat vícenáosbnì -pt a -pu, napø:
+./ipk-scan -pt 21,22,143 -pt 53-55 localhost
+
+Je mono kombinovat styly zadávání, napø:
+./ipk-scan -pt 21,22,143,6-13 localhost
+
+Omezení programu:
+Nepodaøilo se korektnì zprovoznit odesílání packetù, viz dokumentace, tedy se pro UDP vše tváøí jako open a pro TCP jako filtered.
